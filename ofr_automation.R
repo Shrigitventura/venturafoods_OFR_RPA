@@ -1,11 +1,3 @@
-# install.packages("tidyverse")
-# install.packages("magrittr")
-# install.packages("openxlsx")
-# install.packages("readxl")
-# install.packages("writexl")
-# install.packages("janitor")
-
-
 library(tidyverse)
 library(magrittr)
 library(openxlsx)
