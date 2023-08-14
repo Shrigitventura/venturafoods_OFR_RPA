@@ -28,7 +28,7 @@ csv_data %>%
 
 #######################################
 
-# projected_to_ship_case_no in OFR should match with shipq_qty in Sarah's file
+# projected_to_ship_case_no in OFR should match with shipq_qty in csv file
 
 ofr_data %>% 
   dplyr::mutate(product_label_sku = gsub("-", "", product_label_sku)) %>% 
