@@ -10,8 +10,10 @@ library(lubridate)
 library(rio)
 
 #################################################################### Read Files ####################################################################
-ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/OFR Master List for Review 08.07.23.xlsx")
-csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/OE630CR_025216_20230807_.csv")
+ofr <- read_excel(input$ofr_file$datapath)
+
+csv_data <- read_csv(input$csv_data_file$datapath)
+
 
 ####################################################################################################################################################
 
@@ -52,5 +54,4 @@ csv_data_compare %>%
 ####################################################      export to your directory    #############################################################
 ###################################################################################################################################################
 
-writexl::write_xlsx(compared_data, "C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/compared_data.xlsx")
 
