@@ -14,7 +14,7 @@ ui <- fluidPage(
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")  # Optional custom CSS
   ),
-  navbarPage("Ventura Foods Data App",
+  navbarPage("Ventura Foods OFR Process Automation App",
              tabPanel("Home",
                       div(id = "loading-content",
                           tags$img(src = 'VenturaFoodsLogo.png', height = 72, width = 250),  # Adjust size as needed
