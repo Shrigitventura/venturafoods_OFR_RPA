@@ -44,7 +44,10 @@ csv_data_compare %>%
   dplyr::left_join(ofr_data_ship_case) %>%
   dplyr::mutate(match = ifelse(shipq_qty == projected_to_ship_case_no, "matching", "not_matching")) %>% 
   dplyr::relocate(shipq_qty, .before = projected_to_ship_case_no) %>% 
-  dplyr::select(-ref, -item_to_compare_csv) -> compared_data
+  dplyr::select(-ref, -item_to_compare_csv) %>% 
+  dplyr::mutate(projected_to_ship_case_no = ifelse(is.na(projected_to_ship_case_no), "Not in OFR", projected_to_ship_case_no),
+                item_to_compare_ofr = ifelse(is.na(item_to_compare_ofr), "Not in OFR", item_to_compare_ofr),
+                match = ifelse(is.na(match), "Not in OFR", match)) -> compared_data
 
 
 
