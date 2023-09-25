@@ -56,7 +56,10 @@ server <- function(input, output) {
         left_join(ofr_data_ship_case, by = "ref") %>%
         mutate(match = ifelse(shipq_qty == projected_to_ship_case_no, "matching", "not_matching")) %>%
         relocate(shipq_qty, .before = projected_to_ship_case_no) %>% 
-        select(-ref, -item_to_compare_csv) -> compared_data
+        select(-ref, -item_to_compare_csv) %>% 
+        mutate(projected_to_ship_case_no = ifelse(is.na(projected_to_ship_case_no), "Not in OFR", projected_to_ship_case_no),
+               item_to_compare_ofr = ifelse(is.na(item_to_compare_ofr), "Not in OFR", item_to_compare_ofr),
+               match = ifelse(is.na(match), "Not in OFR", match)) -> compared_data
       
       writexl::write_xlsx(compared_data, file)
     }
