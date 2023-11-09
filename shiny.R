@@ -6,8 +6,8 @@ library(readr)
 library(dplyr)
 library(janitor)
 library(writexl)
-library(DT)
 
+#
 # UI
 ui <- fluidPage(
   theme = shinytheme("flatly"),  # Bootstrap theme
@@ -24,21 +24,18 @@ ui <- fluidPage(
                           tags$p("For inquiries, feel free to reach out to ", 
                                  tags$a(href = "mailto:slee@venturafoods.com", "Stan Lee (slee@venturafoods.com)")),
                           shiny::tags$script("$('#loading-content').shinyjs.pageLoading = function(){};")  # Optional loading animation
-                      ),
-                      # Add a placeholder for the data table
-                      DTOutput('dataTable')
+                      )
              )
   )
 )
 
 # Server
 server <- function(input, output) {
-  # Reactively process the data once both files are uploaded
-  processedData <- reactive({
-    req(input$ofr_file, input$csv_data_file)  # Ensure both files are uploaded
-    
-    ofr <- read_excel(input$ofr_file$datapath)
-    csv_data <- read_csv(input$csv_data_file$datapath)
+  output$downloadData <- downloadHandler(
+    filename = function() { paste('compared_data.xlsx') },
+    content = function(file) {
+      ofr <- read_excel(input$ofr_file$datapath)
+      csv_data <- read_csv(input$csv_data_file$datapath)
       
       ofr %>% 
         data.frame() %>% 
@@ -69,17 +66,9 @@ server <- function(input, output) {
       
       
       writexl::write_xlsx(compared_data, file)
-      
-      compared_data
-    })
-  
-  # Render the processed data table
-  output$dataTable <- renderDT({
-    req(processedData())  # ensure the data is processed
-    datatable(processedData(), options = list(pageLength = 5))  # display with DT::datatable
-  })
+    }
+  )
 }
-
 
 # Run the Shiny App
 shinyApp(ui, server)
