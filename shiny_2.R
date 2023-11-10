@@ -2,76 +2,98 @@ library(shiny)
 library(shinythemes)
 library(DT)
 library(tidyverse)
-
+library(lubridate)
 
 # Load data
 data <- readRDS("OFR_data_base.rds")
 
-
+data %>% 
+  dplyr::mutate(shortage_date = ymd(shortage_date),
+                sales_order_date = ymd(sales_order_date),
+                back_order_date = ymd(back_order_date)) %>% 
+  dplyr::mutate(match = gsub("not_matching", "Not Matching", match),
+                match = gsub("matching", "Matching", match)) %>% 
+  dplyr::rename(Shortage_Date = shortage_date,
+                Location = location, 
+                "Legacy Sales Order" = legacy_sales_order,
+                "Sales Order Date" = sales_order_date,
+                "JDE Sales Order" = jde_sales_order,
+                "Back Order Date" = back_order_date,
+                "Reference Order Date" = reference_order_date,
+                "Customer PO" = customer_po,
+                "Customer Ship To Number" = customer_ship_to_8,
+                "Customer Ship To Name" = customer_ship_to_9,
+                "Make Buy Transfer" = make_buy_transfer,
+                "Label Owner" = label_owner,
+                "Priority SKU" = priority_sku,
+                Item = product_label_sku,
+                Description = description,
+                "Customer Profile Owner" = customer_profile_owner,
+                "Shortage Reason" = shortage_reason,
+                "Next Available Date" = next_available_date,
+                "Followup Comments" = followup_comments,
+                "Type of Sale Number" = type_of_sale,
+                "Type of Sale Name" = type_of_sale_2,
+                "Total SKU Beginning Inventory" = total_sku_beginning_inventory,
+                "Open Order Cases" = oo_cases,
+                "Branch Transfer Open Order Cases" = b_t_open_order_cases,
+                "Order Shortage Case" = order_shortage_case_no,
+                "Total SKU Shortage Qty" = total_sku_shortage_qty,
+                "Inventory Soft Hold Release" = inventory_soft_hold_release,
+                "Useable Inventory" = inventory_usable,
+                "Production Schedule" = production_schedule,
+                "Production Soft Hold Release" = production_soft_hold_release,
+                "Purchase Order & Transfer In" = purchase_order_and_transfer_in,
+                "Sales Order & Transfer Out" = sales_order_and_transfer_out,
+                "Item to Compare (OFR)" = item_to_compare_ofr,
+                "Item to Compare (CSV)" = item_to_compare_csv,
+                "Shipped Qty (OFR)" = "shipped qty(OFR)",
+                "Shipped Qty (CSV)" = "shipped qty(CSV)",
+                Match = match) -> data
 
 # Define UI
-ui <- navbarPage(
+ui <- fluidPage(
   theme = shinythemes::shinytheme("flatly"),
-  title = "Order Fulfillment Report (OFR)",  # This sets the app title
-  tabPanel("Data View", # This is the first page
-           tags$head(
-             tags$style(HTML("
-               #logo {
-                 float: right;
-                 height: 60px; /* You can adjust the size of the logo here */
-               }
-             "))
-           ),
-           titlePanel(div(img(src = "VenturaFoodsLogo.png", id="logo"), "Order Fulfillment Report (OFR)")),
-           fluidRow(
-             column(4, dateRangeInput("dateRange", "Shortage Date Range:",
-                                      start = min(data$ShortageDate),
-                                      end = max(data$ShortageDate))),
-             column(8, DTOutput("datatable"))
-           )
-  )
+  titlePanel("Data Display", windowTitle = "Data Overview"),
+  tags$head(tags$link(rel = "shortcut icon", href = "www/VenturaFoodsLogo.png")),
+  
+  # Date range input
+  dateRangeInput("dateRange",
+                 label = "Select Date Range",
+                 start = min(data$Shortage_Date),
+                 end = max(data$Shortage_Date)),
+  
+  selectInput("matchFilter", 
+              label = "Filter by Match",
+              choices = unique(data$Match),
+              selected = "Not Matching", # Set default selection
+              multiple = TRUE),
+  
+  DTOutput("datatable")
 )
 
+# Define server logic
 server <- function(input, output) {
-  
-  # Reactive expression to read and preprocess data
-  reactive_data <- reactive({
-    data <- readRDS("OFR_data_base.rds")
-    data <- data %>%
-      mutate(ShortageDate = as.Date(shortage_date, format="%Y-%m-%dT%H:%M:%SZ")) %>%
-      dplyr::rename(
-        Location = location,
-        LegacySalesOrder = legacy_sales_order,
-        ShortageDate = shortage_date
-      )
-    # Return the processed data
-    data
-  })
-  
-  # Reactive data that responds to the date range filter
-  filtered_data <- reactive({
-    # Access the reactive data
-    df <- reactive_data()
-    # Apply the filter if dateRange is not null
-    if (!is.null(input$dateRange)) {
-      df <- df %>% 
-        filter(ShortageDate >= input$dateRange[1] & ShortageDate <= input$dateRange[2])
-    }
-    # Return the filtered or original data
-    df
-  })
   
   # Render datatable
   output$datatable <- renderDT({
-    datatable(filtered_data(),
-              extensions = "Buttons",
-              options = list(
-                pageLength = 100,
-                scrollX = TRUE,
-                dom = 'Blfrtip',
-                buttons = c('copy', 'csv', 'excel'),
-                fixedColumns = list(leftColumns = 2)
-              ))
+    # Filter data based on selected date range
+    
+    filtered_data <- data %>%
+      filter(Shortage_Date >= input$dateRange[1] & Shortage_Date <= input$dateRange[2]) 
+    
+    filtered_data <- data %>%
+      filter(Match %in% input$matchFilter)
+    
+    DT::datatable(filtered_data,
+                  extensions = "Buttons",
+                  options = list(
+                    pageLength = 100,
+                    scrollX = TRUE,
+                    dom = 'Blfrtip',
+                    buttons = c('copy', 'csv', 'excel'),
+                    fixedColumns = list(leftColumns = 2)
+                  ))
   })
 }
 

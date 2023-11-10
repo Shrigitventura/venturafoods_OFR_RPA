@@ -69,3 +69,4 @@ file.rename(from = "OFR_data_base_11.08.2023.rds", to = "C:/Users/slee/OneDrive 
 
 ################### OFR_data_base.rds is the main resource for the shiny #####################
 
+OFR_data_base %>% str()
