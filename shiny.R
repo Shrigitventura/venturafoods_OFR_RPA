@@ -61,7 +61,7 @@ ui <- navbarPage("Order Fulfillment Report (OFR)", # Name of the app
                                   div(class = "col-sm-8",
                                       "Order Fulfillment Report (OFR)"), # Left side: title
                                   div(class = "col-sm-4",
-                                      img(src = "logo.png", height = "50px", align = "right")) # Right side: logo
+                                      img(src = "VenturaFoodsLogo.png", height = "60px", align = "right")) # Right side: logo
                               )
                             ),
                             tags$head(tags$link(rel = "shortcut icon", href = "www/VenturaFoodsLogo.png")),
