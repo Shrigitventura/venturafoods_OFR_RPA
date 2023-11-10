@@ -9,10 +9,11 @@ library(janitor)
 library(lubridate)
 library(rio)
 
-#################################################################### Read Files ####################################################################
-ofr <- read_excel(input$ofr_file$datapath)
-csv_data <- read_csv(input$csv_data_file$datapath)
 
+### Daily Processing ###
+#################################################################### Read Files ####################################################################
+ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2023/11.08.2023/ofr.xlsx")
+csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2023/11.08.2023/csv.csv")
 ####################################################################################################################################################
 
 # Clean Data
@@ -42,13 +43,29 @@ ofr_data %>%
   dplyr::relocate(projected_to_ship_case_no, .before = shipq_qty) %>% 
   dplyr::rename("shipped qty(OFR)" = projected_to_ship_case_no,
                 "shipped qty(CSV)" = shipq_qty) %>% 
-  dplyr::select(-ref)-> compared_data
+  dplyr::select(-ref) %>% 
+  dplyr::mutate(next_available_date = as.double(next_available_date),
+                next_available_date = as.Date(next_available_date, origin = "1899-12-30")) -> compared_data
 
 
 ###################################################################################################################################################
-####################################################      export to your directory    #############################################################
+###############################################################    Save it to DB  #################################################################
 ###################################################################################################################################################
 
+# saveRDS(compared_data, "OFR_data_base.rds")
+saveRDS(compared_data, "OFR_data_base_11.08.2023.rds")
+ofr_data_base <- readRDS("OFR_data_base.rds")
 
 
+compared_data$back_order_date <- as.Date(compared_data$back_order_date, origin = "1899-12-30")
+# Now you can use rbind
+ofr_data_base_2 <- rbind(ofr_data_base, compared_data)
+
+rbind(ofr_data_base, compared_data) -> ofr_data_base_2
+
+saveRDS(ofr_data_base_2, "OFR_data_base.rds")
+
+file.rename(from = "OFR_data_base_11.08.2023.rds", to = "C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2023/11.08.2023/OFR_data_base_11.08.2023.rds")
+
+################### OFR_data_base.rds is the main resource for the shiny #####################
 
