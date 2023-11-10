@@ -52,37 +52,47 @@ data %>%
                 Match = match) -> data
 
 # Define UI
-ui <- fluidPage(
-  theme = shinythemes::shinytheme("flatly"),
-  titlePanel("Data Display", windowTitle = "Data Overview"),
-  tags$head(tags$link(rel = "shortcut icon", href = "www/VenturaFoodsLogo.png")),
-  
-  # Date range input
-  dateRangeInput("dateRange",
-                 label = "Select Date Range",
-                 start = min(data$Shortage_Date),
-                 end = max(data$Shortage_Date)),
-  
-  selectInput("matchFilter", 
-              label = "Filter by Match",
-              choices = unique(data$Match),
-              selected = "Not Matching", # Set default selection
-              multiple = TRUE),
-  
-  DTOutput("datatable")
+ui <- navbarPage("Order Fulfillment Report (OFR)", # Name of the app
+                 theme = shinythemes::shinytheme("flatly"),
+                 tabPanel("Main Page", 
+                          fluidPage(
+                            titlePanel(
+                              div(class = "row", 
+                                  div(class = "col-sm-8",
+                                      "Order Fulfillment Report (OFR)"), # Left side: title
+                                  div(class = "col-sm-4",
+                                      img(src = "VenturaFoodsLogo.png", height = "60px", align = "right")) # Right side: logo
+                              )
+                            ),
+                            tags$head(tags$link(rel = "shortcut icon", href = "www/VenturaFoodsLogo.png")),
+                            
+                            # Date range input
+                            dateRangeInput("dateRange",
+                                           label = "Select Date Range",
+                                           start = min(data$Shortage_Date),
+                                           end = max(data$Shortage_Date)),
+                            
+                            selectInput("matchFilter", 
+                                        label = "Filter by Match",
+                                        choices = unique(data$Match),
+                                        selected = "Not Matching", # Set default selection
+                                        multiple = TRUE),
+                            
+                            DTOutput("datatable")
+                          )
+                 )
+                 # You can add more tabPanel() here for additional pages
 )
+
 
 # Define server logic
 server <- function(input, output) {
   
   # Render datatable
   output$datatable <- renderDT({
-    # Filter data based on selected date range
-    
+    # Apply both filters sequentially
     filtered_data <- data %>%
-      filter(Shortage_Date >= input$dateRange[1] & Shortage_Date <= input$dateRange[2]) 
-    
-    filtered_data <- data %>%
+      filter(Shortage_Date >= input$dateRange[1] & Shortage_Date <= input$dateRange[2]) %>%
       filter(Match %in% input$matchFilter)
     
     DT::datatable(filtered_data,
