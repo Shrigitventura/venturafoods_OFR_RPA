@@ -26,7 +26,7 @@ data %>%
                 "Make Buy Transfer" = make_buy_transfer,
                 "Label Owner" = label_owner,
                 "Priority SKU" = priority_sku,
-                Item = product_label_sku,
+                Product = product_label_sku,
                 Description = description,
                 "Customer Profile Owner" = customer_profile_owner,
                 "Shortage Reason" = shortage_reason,
@@ -52,21 +52,20 @@ data %>%
                 Match = match) -> data
 
 # Define UI
-ui <- navbarPage("Order Fulfillment Report (OFR)", # Name of the app
+ui <- navbarPage("Order Fulfillment Report (OFR)", 
                  theme = shinythemes::shinytheme("flatly"),
                  tabPanel("Main Page", 
                           fluidPage(
                             titlePanel(
                               div(class = "row", 
                                   div(class = "col-sm-8",
-                                      "Order Fulfillment Report (OFR)"), # Left side: title
+                                      "Order Fulfillment Report (OFR)"), 
                                   div(class = "col-sm-4",
-                                      img(src = "VenturaFoodsLogo.png", height = "60px", align = "right")) # Right side: logo
+                                      img(src = "VenturaFoodsLogo.png", height = "60px", align = "right"))
                               )
                             ),
                             tags$head(tags$link(rel = "shortcut icon", href = "www/VenturaFoodsLogo.png")),
                             
-                            # Date range input
                             dateRangeInput("dateRange",
                                            label = "Select Date Range",
                                            start = min(data$Shortage_Date),
@@ -75,22 +74,48 @@ ui <- navbarPage("Order Fulfillment Report (OFR)", # Name of the app
                             selectInput("matchFilter", 
                                         label = "Filter by Match",
                                         choices = unique(data$Match),
-                                        selected = "Not Matching", # Set default selection
+                                        selected = "Not Matching", 
                                         multiple = TRUE),
                             
                             DTOutput("datatable")
                           )
-                 )
-                 # You can add more tabPanel() here for additional pages
-)
+                 ),
+                 
+                 tabPanel("Not matchings", 
+                          tabsetPanel(
+                            tabPanel("By Profile Owner",
+                                     fluidPage(
+                                       dateRangeInput("dateRangeTab1",
+                                                      label = "Select Date Range",
+                                                      start = min(data$Shortage_Date),
+                                                      end = max(data$Shortage_Date)),
+                                       splitLayout( 
+                                         DTOutput("pivotTableByProfileOwner"),
+                                         plotOutput("plotByProfileOwner")
+                                       )),
+                            ),
+                            tabPanel("By Product",
+                                     fluidPage(
+                                       dateRangeInput("dateRangeTab2",
+                                                      label = "Select Date Range",
+                                                      start = min(data$Shortage_Date),
+                                                      end = max(data$Shortage_Date)),
+                                       splitLayout(
+                                         DTOutput("pivotTableByProduct"),
+                                         plotOutput("plotByProduct")
+                                       )
+                                     ))
+                          )
+                          
+                 ))
+
 
 
 # Define server logic
 server <- function(input, output) {
   
-  # Render datatable
   output$datatable <- renderDT({
-    # Apply both filters sequentially
+    
     filtered_data <- data %>%
       filter(Shortage_Date >= input$dateRange[1] & Shortage_Date <= input$dateRange[2]) %>%
       filter(Match %in% input$matchFilter)
@@ -102,9 +127,82 @@ server <- function(input, output) {
                     scrollX = TRUE,
                     dom = 'Blfrtip',
                     buttons = c('copy', 'csv', 'excel'),
-                    fixedColumns = list(leftColumns = 2)
-                  ))
+                    fixedColumns = list(leftColumns = 2)),
+                  rownames = FALSE)
   })
+  
+  summarizedData <- reactive({
+    data %>%
+      filter(Match == "Not Matching") %>%
+      filter(Shortage_Date >= input$dateRangeTab1[1] & Shortage_Date <= input$dateRangeTab1[2]) %>%
+      group_by(`Customer Profile Owner`) %>%
+      summarize(Count = n()) %>%
+      ungroup()
+  })
+  
+  output$pivotTableByProfileOwner <- renderDT({
+    DT::datatable(summarizedData(),
+                  options = list(
+                    pageLength = 100,
+                    scrollX = TRUE,
+                    dom = 'Blfrtip',
+                    buttons = c('copy', 'csv', 'excel'),
+                    fixedColumns = list(leftColumns = 2)),
+                  rownames = FALSE)
+  })
+  
+  output$plotByProfileOwner <- renderPlot({
+    summarized_plot_data <- summarizedData() %>%
+      arrange(desc(Count)) 
+    
+    ggplot(summarized_plot_data, aes(x = reorder(`Customer Profile Owner`, -Count), y = Count)) +
+      geom_bar(stat = "identity", fill = "steelblue") +
+      geom_text(aes(label = Count), vjust = -0.3, fontface = "bold") + 
+      theme_classic() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold", size = 12), 
+            axis.text.y = element_text(face = "bold", size = 12)) +
+      theme(axis.title.x = element_blank(), 
+            axis.title.y = element_blank())
+  })
+  
+  
+  summarizedData_2 <- reactive({
+    data %>%
+      filter(Match == "Not Matching") %>%
+      filter(Shortage_Date >= input$dateRangeTab2[1] & Shortage_Date <= input$dateRangeTab2[2]) %>%
+      group_by(Product) %>%
+      summarize(Count = n()) %>%
+      ungroup()
+  })
+  
+  
+  output$pivotTableByProduct <- renderDT({
+    DT::datatable(summarizedData_2(),
+                  options = list(
+                    pageLength = 100,
+                    scrollX = TRUE,
+                    dom = 'Blfrtip',
+                    buttons = c('copy', 'csv', 'excel'),
+                    fixedColumns = list(leftColumns = 2)),
+                  rownames = FALSE)
+  })
+  
+  output$plotByProduct <- renderPlot({
+    summarized_plot_data_2 <- summarizedData_2() %>%
+      arrange(desc(Count)) 
+    
+    ggplot(summarized_plot_data_2, aes(x = reorder(Product, -Count), y = Count)) +
+      geom_bar(stat = "identity", fill = "darkgoldenrod") +
+      geom_text(aes(label = Count), vjust = -0.3, fontface = "bold") + 
+      theme_classic() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold", size = 12), 
+            axis.text.y = element_text(face = "bold", size = 12)) +
+      theme(axis.title.x = element_blank(), 
+            axis.title.y = element_blank())
+  })
+  
+  
+  
 }
 
 # Run the application 
