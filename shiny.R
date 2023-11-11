@@ -92,7 +92,7 @@ ui <- navbarPage("Order Fulfillment Report (OFR)",
                                        splitLayout( 
                                          DTOutput("pivotTableByProfileOwner"),
                                          plotOutput("plotByProfileOwner")
-                                       )),
+                                       ))
                             ),
                             tabPanel("By Product",
                                      fluidPage(
@@ -103,11 +103,32 @@ ui <- navbarPage("Order Fulfillment Report (OFR)",
                                        splitLayout(
                                          DTOutput("pivotTableByProduct"),
                                          plotOutput("plotByProduct")
+                                       ))
+                            ),
+                            tabPanel("By Ship Location",
+                                     fluidPage(
+                                       dateRangeInput("dateRangeTab3",
+                                                      label = "Select Date Range",
+                                                      start = min(data$Shortage_Date),
+                                                      end = max(data$Shortage_Date)),
+                                       splitLayout(
+                                         DTOutput("pivotTableByLocation"),
+                                         plotOutput("plotByLocation")
+                                       ))
+                            ),
+                            tabPanel("By Ship To Customer",
+                                     fluidPage(
+                                       dateRangeInput("dateRangeTab4",
+                                                      label = "Select Date Range",
+                                                      start = min(data$Shortage_Date),
+                                                      end = max(data$Shortage_Date)),
+                                       splitLayout(
+                                         DTOutput("pivotTableByCustomer"),
+                                         plotOutput("plotByCustomer")
                                        )
-                                     ))
-                          )
-                          
-                 ))
+                                     )))))
+
+
 
 
 
@@ -155,14 +176,15 @@ server <- function(input, output) {
     summarized_plot_data <- summarizedData() %>%
       arrange(desc(Count)) 
     
-    ggplot(summarized_plot_data, aes(x = reorder(`Customer Profile Owner`, -Count), y = Count)) +
+    ggplot(summarized_plot_data, aes(x = reorder(`Customer Profile Owner`, Count), y = Count)) +
       geom_bar(stat = "identity", fill = "steelblue") +
-      geom_text(aes(label = Count), vjust = -0.3, fontface = "bold") + 
+      geom_text(aes(label = Count), hjust = 1.3, vjust = 0.5, fontface = "bold", color = "white") + 
       theme_classic() +
       theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold", size = 12), 
             axis.text.y = element_text(face = "bold", size = 12)) +
       theme(axis.title.x = element_blank(), 
-            axis.title.y = element_blank())
+            axis.title.y = element_blank()) +
+      coord_flip()
   })
   
   
@@ -191,15 +213,94 @@ server <- function(input, output) {
     summarized_plot_data_2 <- summarizedData_2() %>%
       arrange(desc(Count)) 
     
-    ggplot(summarized_plot_data_2, aes(x = reorder(Product, -Count), y = Count)) +
+    ggplot(summarized_plot_data_2, aes(x = reorder(Product, Count), y = Count)) +
       geom_bar(stat = "identity", fill = "darkgoldenrod") +
-      geom_text(aes(label = Count), vjust = -0.3, fontface = "bold") + 
+      geom_text(aes(label = Count), hjust = 1.3, vjust = 0.5, fontface = "bold", color = "white") + 
       theme_classic() +
       theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold", size = 12), 
             axis.text.y = element_text(face = "bold", size = 12)) +
       theme(axis.title.x = element_blank(), 
-            axis.title.y = element_blank())
+            axis.title.y = element_blank()) +
+      coord_flip()
   })
+  
+  
+  
+  
+  summarizedData_3 <- reactive({
+    data %>%
+      filter(Match == "Not Matching") %>%
+      filter(Shortage_Date >= input$dateRangeTab3[1] & Shortage_Date <= input$dateRangeTab3[2]) %>%
+      group_by(Location) %>%
+      summarize(Count = n()) %>%
+      ungroup()
+  })
+  
+  output$pivotTableByLocation <- renderDT({
+    DT::datatable(summarizedData_3(),
+                  options = list(
+                    pageLength = 100,
+                    scrollX = TRUE,
+                    dom = 'Blfrtip',
+                    buttons = c('copy', 'csv', 'excel'),
+                    fixedColumns = list(leftColumns = 2)),
+                  rownames = FALSE)
+  })
+  
+  
+  output$plotByLocation <- renderPlot({
+    summarized_plot_data_3 <- summarizedData_3() %>%
+      arrange(desc(Count)) 
+    
+    ggplot(summarized_plot_data_3, aes(x = reorder(Location, Count), y = Count)) +
+      geom_bar(stat = "identity", fill = "chocolate3") +
+      geom_text(aes(label = Count), hjust = 1.3, vjust = 0.5, fontface = "bold", color = "white") + 
+      theme_classic() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold", size = 12), 
+            axis.text.y = element_text(face = "bold", size = 12)) +
+      theme(axis.title.x = element_blank(), 
+            axis.title.y = element_blank()) +
+      coord_flip()
+  })
+  
+  
+  
+  summarizedData_4 <- reactive({
+    data %>%
+      filter(Match == "Not Matching") %>%
+      filter(Shortage_Date >= input$dateRangeTab4[1] & Shortage_Date <= input$dateRangeTab4[2]) %>%
+      group_by(`Customer Ship To Name`) %>%
+      summarize(Count = n()) %>%
+      ungroup()
+  })
+  
+  output$pivotTableByCustomer <- renderDT({
+    DT::datatable(summarizedData_4(),
+                  options = list(
+                    pageLength = 100,
+                    scrollX = TRUE,
+                    dom = 'Blfrtip',
+                    buttons = c('copy', 'csv', 'excel'),
+                    fixedColumns = list(leftColumns = 2)),
+                  rownames = FALSE)
+  })
+  
+  
+  output$plotByCustomer <- renderPlot({
+    summarized_plot_data_4 <- summarizedData_4() %>%
+      arrange(desc(Count)) 
+    
+    ggplot(summarized_plot_data_4, aes(x = reorder(`Customer Ship To Name`, Count), y = Count)) +
+      geom_bar(stat = "identity", fill = "azure3") +
+      geom_text(aes(label = Count), hjust = 1.3, vjust = 0.5, fontface = "bold", color = "black") + 
+      theme_classic() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold", size = 12), 
+            axis.text.y = element_text(face = "bold", size = 12)) +
+      theme(axis.title.x = element_blank(), 
+            axis.title.y = element_blank()) +
+      coord_flip()
+  })
+  
   
   
   
