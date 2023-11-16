@@ -77,7 +77,8 @@ ui <- navbarPage("Order Fulfillment Report (OFR)",
                                         selected = "Not Matching", 
                                         multiple = TRUE),
                             
-                            DTOutput("datatable")
+                            DTOutput("datatable"),
+                            downloadButton("downloadData", "Download Full Data")
                           )
                  ),
                  
@@ -302,7 +303,22 @@ server <- function(input, output) {
   })
   
   
+  # Reactive expression for filtered data
+  filteredData <- reactive({
+    data %>% 
+      filter(Shortage_Date >= input$dateRange[1] & Shortage_Date <= input$dateRange[2]) %>%
+      filter(Match %in% input$matchFilter)
+  })
   
+  # Download handler for filtered data
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("filtered_data-", Sys.Date(), ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(filteredData(), file, row.names = FALSE)
+    }
+  )
   
 }
 
