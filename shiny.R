@@ -3,6 +3,7 @@ library(shinythemes)
 library(DT)
 library(tidyverse)
 library(lubridate)
+library(shinyWidgets)
 
 # Load data
 data <- readRDS("OFR_data_base.rds")
@@ -49,7 +50,10 @@ data %>%
                 "Item to Compare (CSV)" = item_to_compare_csv,
                 "Shipped Qty (OFR)" = "shipped qty(OFR)",
                 "Shipped Qty (CSV)" = "shipped qty(CSV)",
-                Match = match) -> data
+                Match = match) %>% 
+  dplyr::mutate(Month = lubridate::month(Shortage_Date),
+                Year = lubridate::year(Shortage_Date),
+                Month_Year = paste0(Month, "/", Year))-> data
 
 # Define UI
 ui <- navbarPage("Order Fulfillment Report (OFR)", 
@@ -95,16 +99,27 @@ ui <- navbarPage("Order Fulfillment Report (OFR)",
                                          plotOutput("plotByProfileOwner")
                                        ))
                             ),
-                            tabPanel("By Product",
+                            tabPanel("By Profile Owner (Monthly View)",
                                      fluidPage(
-                                       dateRangeInput("dateRangeTab2",
-                                                      label = "Select Date Range",
-                                                      start = min(data$Shortage_Date),
-                                                      end = max(data$Shortage_Date)),
-                                       splitLayout(
-                                         DTOutput("pivotTableByProduct"),
-                                         plotOutput("plotByProduct")
-                                       ))
+                                       pickerInput("monthYearFilter", "Select Month/Year",
+                                                   choices = unique(data$Month_Year), 
+                                                   selected = unique(data$Month_Year), 
+                                                   options = list(`actions-box` = TRUE), 
+                                                   multiple = TRUE),
+                                       pickerInput("profileOwnerFilter", "Filter by Customer Profile Owner",
+                                                   choices = unique(data$`Customer Profile Owner`), 
+                                                   selected = unique(data$`Customer Profile Owner`), 
+                                                   options = list(`actions-box` = TRUE), 
+                                                   multiple = TRUE),
+                                       fluidRow(
+                                         column(6, DTOutput("pivotTableByProfileOwnerMonthly"),
+                                                br(),
+                                                br(),
+                                                br(),
+                                                DTOutput("pivotTableByProfileOwnerMonthly_2")),
+                                         column(6, plotOutput("plotByProfileOwnerMonthly"))
+                                       )
+                                     )
                             ),
                             tabPanel("By Ship Location",
                                      fluidPage(
@@ -117,17 +132,31 @@ ui <- navbarPage("Order Fulfillment Report (OFR)",
                                          plotOutput("plotByLocation")
                                        ))
                             ),
-                            tabPanel("By Ship To Customer",
+                            tabPanel("By Ship Location (Monthly View)",
                                      fluidPage(
-                                       dateRangeInput("dateRangeTab4",
-                                                      label = "Select Date Range",
-                                                      start = min(data$Shortage_Date),
-                                                      end = max(data$Shortage_Date)),
-                                       splitLayout(
-                                         DTOutput("pivotTableByCustomer"),
-                                         plotOutput("plotByCustomer")
+                                       pickerInput("monthYearFilter", "Select Month/Year",
+                                                   choices = unique(data$Month_Year), 
+                                                   selected = unique(data$Month_Year), 
+                                                   options = list(`actions-box` = TRUE), 
+                                                   multiple = TRUE),
+                                       pickerInput("shipLocationFilter", "Filter by Ship Location",
+                                                   choices = unique(data$Location), 
+                                                   selected = unique(data$Location), 
+                                                   options = list(`actions-box` = TRUE), 
+                                                   multiple = TRUE),
+                                       fluidRow(
+                                         column(6, DTOutput("pivotTableByShipLocationMonthly"),
+                                                br(),
+                                                br(),
+                                                br(),
+                                                DTOutput("pivotTableByShipLocationMonthly_2")),
+                                         column(6, plotOutput("plotByShipLocationMonthly"))
                                        )
-                                     )))))
+                                     )
+                            )
+                          )
+                 )
+)
 
 
 
@@ -143,12 +172,14 @@ server <- function(input, output) {
       filter(Match %in% input$matchFilter)
     
     DT::datatable(filtered_data,
-                  extensions = "Buttons",
+                  extensions = c('Buttons', 'FixedHeader'), 
                   options = list(
                     pageLength = 100,
                     scrollX = TRUE,
+                    scrollY = "500px", 
                     dom = 'Blfrtip',
                     buttons = c('copy', 'csv', 'excel'),
+                    fixedHeader = TRUE, 
                     fixedColumns = list(leftColumns = 2)),
                   rownames = FALSE)
   })
@@ -190,40 +221,75 @@ server <- function(input, output) {
   
   
   summarizedData_2 <- reactive({
-    data %>%
+    filtered_data <- data %>%
       filter(Match == "Not Matching") %>%
-      filter(Shortage_Date >= input$dateRangeTab2[1] & Shortage_Date <= input$dateRangeTab2[2]) %>%
-      group_by(Product) %>%
+      mutate(Month = lubridate::month(Shortage_Date),
+             Year = lubridate::year(Shortage_Date),
+             Month_Year = paste0(Month, "/", Year)) %>%
+      filter(Month_Year %in% input$monthYearFilter) %>%
+      filter(`Customer Profile Owner` %in% input$profileOwnerFilter)
+    
+    filtered_data %>%  
+      group_by(Month_Year, `Customer Profile Owner`) %>%
+      summarize(Count = n()) %>%
+      ungroup()
+  })
+  
+  summarizedData_2_2 <- reactive({
+    filtered_data <- data %>%
+      filter(Match == "Not Matching") %>%
+      mutate(Month = lubridate::month(Shortage_Date),
+             Year = lubridate::year(Shortage_Date),
+             Month_Year = paste0(Month, "/", Year)) %>%
+      filter(Month_Year %in% input$monthYearFilter) %>%
+      filter(`Customer Profile Owner` %in% input$profileOwnerFilter)
+    
+    filtered_data %>%  
+      group_by(Month_Year) %>%
       summarize(Count = n()) %>%
       ungroup()
   })
   
   
-  output$pivotTableByProduct <- renderDT({
+  output$pivotTableByProfileOwnerMonthly <- renderDT({
     DT::datatable(summarizedData_2(),
+                  extensions = c('FixedHeader'), 
                   options = list(
-                    pageLength = 100,
+                    pageLength = 10,
                     scrollX = TRUE,
-                    dom = 'Blfrtip',
-                    buttons = c('copy', 'csv', 'excel'),
+                    scrollY = "300px", 
+                    fixedHeader = TRUE, 
                     fixedColumns = list(leftColumns = 2)),
                   rownames = FALSE)
   })
   
-  output$plotByProduct <- renderPlot({
-    summarized_plot_data_2 <- summarizedData_2() %>%
-      arrange(desc(Count)) 
-    
-    ggplot(summarized_plot_data_2, aes(x = reorder(Product, Count), y = Count)) +
-      geom_bar(stat = "identity", fill = "darkgoldenrod") +
-      geom_text(aes(label = Count), hjust = 1.3, vjust = 0.5, fontface = "bold", color = "white") + 
-      theme_classic() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold", size = 12), 
-            axis.text.y = element_text(face = "bold", size = 12)) +
-      theme(axis.title.x = element_blank(), 
-            axis.title.y = element_blank()) +
-      coord_flip()
+  output$pivotTableByProfileOwnerMonthly_2 <- renderDT({
+    DT::datatable(summarizedData_2_2(),
+                  extensions = c('FixedHeader'), 
+                  options = list(
+                    pageLength = 10,
+                    scrollX = TRUE,
+                    scrollY = "300px", 
+                    fixedHeader = TRUE, 
+                    fixedColumns = list(leftColumns = 2)),
+                  rownames = FALSE)
   })
+  
+  output$plotByProfileOwnerMonthly <- renderPlot({
+    summarized_plot_data_2 <- summarizedData_2_2() %>%
+      arrange(desc(Count))
+    
+    ggplot(summarized_plot_data_2, aes(x = Month_Year, y = Count)) +
+      geom_bar(stat = "identity", fill = "black") +
+      geom_text(aes(label = Count), vjust = -0.5, color = "black", size = 5, fontface = "bold") +
+      theme_classic() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold", size = 12),
+            axis.text.y = element_text(face = "bold", size = 12)) +
+      theme(axis.title.x = element_blank(),
+            axis.title.y = element_blank())
+  })
+  
+  
   
   
   
@@ -267,40 +333,75 @@ server <- function(input, output) {
   
   
   summarizedData_4 <- reactive({
-    data %>%
+    filtered_data <- data %>%
       filter(Match == "Not Matching") %>%
-      filter(Shortage_Date >= input$dateRangeTab4[1] & Shortage_Date <= input$dateRangeTab4[2]) %>%
-      group_by(`Customer Ship To Name`) %>%
+      mutate(Month = lubridate::month(Shortage_Date),
+             Year = lubridate::year(Shortage_Date),
+             Month_Year = paste0(Month, "/", Year)) %>%
+      filter(Month_Year %in% input$monthYearFilter) %>%
+      filter(Location %in% input$shipLocationFilter)
+    
+    filtered_data %>%  
+      group_by(Month_Year, Location) %>%
       summarize(Count = n()) %>%
       ungroup()
   })
   
-  output$pivotTableByCustomer <- renderDT({
+  summarizedData_4_2 <- reactive({
+    filtered_data <- data %>%
+      filter(Match == "Not Matching") %>%
+      mutate(Month = lubridate::month(Shortage_Date),
+             Year = lubridate::year(Shortage_Date),
+             Month_Year = paste0(Month, "/", Year)) %>%
+      filter(Month_Year %in% input$monthYearFilter) %>%
+      filter(Location %in% input$shipLocationFilter)
+    
+    filtered_data %>%  
+      group_by(Month_Year) %>%
+      summarize(Count = n()) %>%
+      ungroup()
+  })
+  
+  
+  output$pivotTableByShipLocationMonthly <- renderDT({
     DT::datatable(summarizedData_4(),
+                  extensions = c('FixedHeader'), 
                   options = list(
-                    pageLength = 100,
+                    pageLength = 10,
                     scrollX = TRUE,
-                    dom = 'Blfrtip',
-                    buttons = c('copy', 'csv', 'excel'),
+                    scrollY = "300px", 
+                    fixedHeader = TRUE, 
                     fixedColumns = list(leftColumns = 2)),
                   rownames = FALSE)
   })
   
-  
-  output$plotByCustomer <- renderPlot({
-    summarized_plot_data_4 <- summarizedData_4() %>%
-      arrange(desc(Count)) 
-    
-    ggplot(summarized_plot_data_4, aes(x = reorder(`Customer Ship To Name`, Count), y = Count)) +
-      geom_bar(stat = "identity", fill = "azure3") +
-      geom_text(aes(label = Count), hjust = 1.3, vjust = 0.5, fontface = "bold", color = "black") + 
-      theme_classic() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold", size = 12), 
-            axis.text.y = element_text(face = "bold", size = 12)) +
-      theme(axis.title.x = element_blank(), 
-            axis.title.y = element_blank()) +
-      coord_flip()
+  output$pivotTableByShipLocationMonthly_2 <- renderDT({
+    DT::datatable(summarizedData_4_2(),
+                  extensions = c('FixedHeader'), 
+                  options = list(
+                    pageLength = 10,
+                    scrollX = TRUE,
+                    scrollY = "300px", 
+                    fixedHeader = TRUE, 
+                    fixedColumns = list(leftColumns = 2)),
+                  rownames = FALSE)
   })
+  
+  output$plotByShipLocationMonthly <- renderPlot({
+    summarized_plot_data_4 <- summarizedData_4_2() %>%
+      arrange(desc(Count))
+    
+    ggplot(summarized_plot_data_4, aes(x = Month_Year, y = Count)) +
+      geom_bar(stat = "identity", fill = "black") +
+      geom_text(aes(label = Count), vjust = -0.5, color = "black", size = 5, fontface = "bold") +
+      theme_classic() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold", size = 12),
+            axis.text.y = element_text(face = "bold", size = 12)) +
+      theme(axis.title.x = element_blank(),
+            axis.title.y = element_blank())
+  })
+  
+  
   
   
   # Reactive expression for filtered data
