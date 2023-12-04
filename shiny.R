@@ -134,7 +134,7 @@ ui <- navbarPage("Order Fulfillment Report (OFR)",
                             ),
                             tabPanel("By Ship Location (Monthly View)",
                                      fluidPage(
-                                       pickerInput("monthYearFilter", "Select Month/Year",
+                                       pickerInput("monthYearFilter_2", "Select Month/Year",
                                                    choices = sort(unique(data$Month_Year)), 
                                                    selected = unique(data$Month_Year),
                                                    options = list(`actions-box` = TRUE),
@@ -184,6 +184,8 @@ server <- function(input, output) {
                   rownames = FALSE)
   })
   
+  
+  
   summarizedData <- reactive({
     data %>%
       filter(Match == "Not Matching") %>%
@@ -192,6 +194,8 @@ server <- function(input, output) {
       summarize(Count = n()) %>%
       ungroup()
   })
+  
+  
   
   output$pivotTableByProfileOwner <- renderDT({
     DT::datatable(summarizedData(),
@@ -280,8 +284,8 @@ server <- function(input, output) {
       arrange(desc(Count))
     
     ggplot(summarized_plot_data_2, aes(x = Month_Year, y = Count)) +
-      geom_bar(stat = "identity", fill = "black") +
-      geom_text(aes(label = Count), vjust = -0.5, color = "black", size = 5, fontface = "bold") +
+      geom_bar(stat = "identity", fill = "#003f5c") +
+      geom_text(aes(label = Count), vjust = -0.5, color = "#003f5c", size = 5, fontface = "bold") +
       theme_classic() +
       theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold", size = 12),
             axis.text.y = element_text(face = "bold", size = 12)) +
@@ -353,7 +357,7 @@ server <- function(input, output) {
       mutate(Month = lubridate::month(Shortage_Date),
              Year = lubridate::year(Shortage_Date),
              Month_Year = paste0(Month, "/", Year)) %>%
-      filter(Month_Year %in% input$monthYearFilter) %>%
+      filter(Month_Year %in% input$monthYearFilter_2) %>%
       filter(Location %in% input$shipLocationFilter)
     
     filtered_data %>%  
@@ -392,8 +396,8 @@ server <- function(input, output) {
       arrange(desc(Count))
     
     ggplot(summarized_plot_data_4, aes(x = Month_Year, y = Count)) +
-      geom_bar(stat = "identity", fill = "black") +
-      geom_text(aes(label = Count), vjust = -0.5, color = "black", size = 5, fontface = "bold") +
+      geom_bar(stat = "identity", fill = "#003f5c") +
+      geom_text(aes(label = Count), vjust = -0.5, color = "#003f5c", size = 5, fontface = "bold") +
       theme_classic() +
       theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "bold", size = 12),
             axis.text.y = element_text(face = "bold", size = 12)) +
