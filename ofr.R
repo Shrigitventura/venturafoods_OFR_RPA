@@ -12,14 +12,15 @@ library(rio)
 
 ### Daily Processing ###
 #################################################################### Read Files ####################################################################
-ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2023/11.01.2023/110623.xlsx")
-csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2023/11.01.2023/110123.csv")
+ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2023/12.15.2023/ofr.xlsx")
+csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2023/12.15.2023/csv.csv")
 ####################################################################################################################################################
 
 # Clean Data
 ofr %>% 
   data.frame() %>% 
-  janitor::clean_names() -> ofr_data
+  janitor::clean_names() %>% 
+  select(1:33) -> ofr_data
 
 csv_data[-1:-2, ] -> csv_data
 
@@ -53,7 +54,7 @@ ofr_data %>%
 ###################################################################################################################################################
 
 # saveRDS(compared_data, "OFR_data_base.rds")
-saveRDS(compared_data, "OFR_data_base_11.01.2023.rds")
+saveRDS(compared_data, "OFR_data_base_12.15.2023.rds")
 ofr_data_base <- readRDS("OFR_data_base.rds")
 
 
@@ -82,8 +83,9 @@ ofr_data_base_2[!duplicated(ofr_data_base_2[,c("location", "legacy_sales_order",
 
 saveRDS(ofr_data_base_2, "OFR_data_base.rds")
 
-file.rename(from = "OFR_data_base_12.08.2023.rds", to = "rds/OFR_data_base_12.08.2023.rds")
+file.rename(from = "OFR_data_base_12.15.2023.rds", to = "rds/OFR_data_base_12.15.2023.rds")
 
 ################### OFR_data_base.rds is the main resource for the shiny #####################
+
 
 
