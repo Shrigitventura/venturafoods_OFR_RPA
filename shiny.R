@@ -53,7 +53,7 @@ data %>%
                 Match = match) %>% 
   dplyr::mutate(Month = lubridate::month(Shortage_Date),
                 Year = lubridate::year(Shortage_Date),
-                Month_Year = paste0(Month, "/", Year))-> data
+                Year_Month = paste0(Year, "/", Month))-> data
 
 # Define UI
 ui <- navbarPage("Order Fulfillment Report (OFR)", 
@@ -102,8 +102,8 @@ ui <- navbarPage("Order Fulfillment Report (OFR)",
                             tabPanel("By Profile Owner (Monthly View)",
                                      fluidPage(
                                        pickerInput("monthYearFilter", "Select Month/Year",
-                                                   choices = sort(unique(data$Month_Year)),  
-                                                   selected = unique(data$Month_Year),
+                                                   choices = sort(unique(data$Year_Month)),  
+                                                   selected = unique(data$Year_Month),
                                                    options = list(`actions-box` = TRUE),
                                                    multiple = TRUE),
                                        pickerInput("profileOwnerFilter", "Filter by Customer Profile Owner",
@@ -135,8 +135,8 @@ ui <- navbarPage("Order Fulfillment Report (OFR)",
                             tabPanel("By Ship Location (Monthly View)",
                                      fluidPage(
                                        pickerInput("monthYearFilter_2", "Select Month/Year",
-                                                   choices = sort(unique(data$Month_Year)), 
-                                                   selected = unique(data$Month_Year),
+                                                   choices = sort(unique(data$Year_Month)), 
+                                                   selected = unique(data$Year_Month),
                                                    options = list(`actions-box` = TRUE),
                                                    multiple = TRUE),
                                        pickerInput("shipLocationFilter", "Filter by Ship Location",
@@ -229,12 +229,12 @@ server <- function(input, output) {
       filter(Match == "Not Matching") %>%
       mutate(Month = lubridate::month(Shortage_Date),
              Year = lubridate::year(Shortage_Date),
-             Month_Year = paste0(Month, "/", Year)) %>%
-      filter(Month_Year %in% input$monthYearFilter) %>%
+             Year_Month = paste0(Year, "/", Month)) %>%
+      filter(Year_Month %in% input$monthYearFilter) %>%
       filter(`Customer Profile Owner` %in% input$profileOwnerFilter)
     
     filtered_data %>%  
-      group_by(Month_Year, `Customer Profile Owner`) %>%
+      group_by(Year_Month, `Customer Profile Owner`) %>%
       summarize(Count = n()) %>%
       ungroup()
   })
@@ -244,12 +244,12 @@ server <- function(input, output) {
       filter(Match == "Not Matching") %>%
       mutate(Month = lubridate::month(Shortage_Date),
              Year = lubridate::year(Shortage_Date),
-             Month_Year = paste0(Month, "/", Year)) %>%
-      filter(Month_Year %in% input$monthYearFilter) %>%
+             Year_Month = paste0(Year, "/", Month)) %>%
+      filter(Year_Month %in% input$monthYearFilter) %>%
       filter(`Customer Profile Owner` %in% input$profileOwnerFilter)
     
     filtered_data %>%  
-      group_by(Month_Year) %>%
+      group_by(Year_Month) %>%
       summarize(Count = n()) %>%
       ungroup()
   })
@@ -283,7 +283,7 @@ server <- function(input, output) {
     summarized_plot_data_2 <- summarizedData_2_2() %>%
       arrange(desc(Count))
     
-    ggplot(summarized_plot_data_2, aes(x = Month_Year, y = Count)) +
+    ggplot(summarized_plot_data_2, aes(x = Year_Month, y = Count)) +
       geom_bar(stat = "identity", fill = "#003f5c") +
       geom_text(aes(label = Count), vjust = -0.5, color = "#003f5c", size = 5, fontface = "bold") +
       theme_classic() +
@@ -341,12 +341,12 @@ server <- function(input, output) {
       filter(Match == "Not Matching") %>%
       mutate(Month = lubridate::month(Shortage_Date),
              Year = lubridate::year(Shortage_Date),
-             Month_Year = paste0(Month, "/", Year)) %>%
-      filter(Month_Year %in% input$monthYearFilter) %>%
+             Year_Month = paste0(Year, "/", Month)) %>%
+      filter(Year_Month %in% input$monthYearFilter) %>%
       filter(Location %in% input$shipLocationFilter)
     
     filtered_data %>%  
-      group_by(Month_Year, Location) %>%
+      group_by(Year_Month, Location) %>%
       summarize(Count = n()) %>%
       ungroup()
   })
@@ -356,12 +356,12 @@ server <- function(input, output) {
       filter(Match == "Not Matching") %>%
       mutate(Month = lubridate::month(Shortage_Date),
              Year = lubridate::year(Shortage_Date),
-             Month_Year = paste0(Month, "/", Year)) %>%
-      filter(Month_Year %in% input$monthYearFilter_2) %>%
+             Year_Month = paste0(Year, "/", Month)) %>%
+      filter(Year_Month %in% input$monthYearFilter_2) %>%
       filter(Location %in% input$shipLocationFilter)
     
     filtered_data %>%  
-      group_by(Month_Year) %>%
+      group_by(Year_Month) %>%
       summarize(Count = n()) %>%
       ungroup()
   })
@@ -395,7 +395,7 @@ server <- function(input, output) {
     summarized_plot_data_4 <- summarizedData_4_2() %>%
       arrange(desc(Count))
     
-    ggplot(summarized_plot_data_4, aes(x = Month_Year, y = Count)) +
+    ggplot(summarized_plot_data_4, aes(x = Year_Month, y = Count)) +
       geom_bar(stat = "identity", fill = "#003f5c") +
       geom_text(aes(label = Count), vjust = -0.5, color = "#003f5c", size = 5, fontface = "bold") +
       theme_classic() +
