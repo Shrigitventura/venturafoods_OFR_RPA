@@ -4,12 +4,12 @@ library(DT)
 library(tidyverse)
 library(lubridate)
 library(shinyWidgets)
-
+ 
 # Load data
 data <- readRDS("OFR_data_base.rds")
 
 data %>% 
-  dplyr::mutate(shortage_date = ymd(shortage_date),
+  dplyr::mutate(shortage_date = ymd(shortage_date), 
                 sales_order_date = ymd(sales_order_date),
                 back_order_date = ymd(back_order_date)) %>% 
   dplyr::mutate(match = gsub("not_matching", "Not Matching", match),
