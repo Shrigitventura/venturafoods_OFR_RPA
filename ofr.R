@@ -12,8 +12,8 @@ library(rio)
 
 ### Daily Processing ###
 #################################################################### Read Files ####################################################################
-ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/02.09.2024/ofr.xlsx")
-csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/02.09.2024/csv.CSV")
+ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/02.12.2024/ofr.xlsx")
+csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/02.12.2024/csv.CSV")
 ####################################################################################################################################################
 
 # Clean Data
