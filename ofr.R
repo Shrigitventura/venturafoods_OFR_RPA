@@ -12,8 +12,8 @@ library(rio)
 
 ### Daily Processing ###
 #################################################################### Read Files ####################################################################
-ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/03.29.2024/ofr.xlsx")
-csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/03.29.2024/csv.CSV")
+ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/04.01.2024/ofr.xlsx")
+csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/04.01.2024/csv.CSV")
 ####################################################################################################################################################
 
 # Clean Data
@@ -54,12 +54,17 @@ ofr_data %>%
 ###################################################################################################################################################
 
 # saveRDS(compared_data, "OFR_data_base.rds")
-saveRDS(compared_data, "OFR_data_base_03.29.2024.rds")
+saveRDS(compared_data, "OFR_data_base_04.01.2024.rds")
 ofr_data_base <- readRDS("OFR_data_base.rds")
 
 
-compared_data$back_order_date <- as.Date(compared_data$back_order_date, origin = "1899-12-30")
-compared_data$shortage_date <- as.Date(compared_data$shortage_date, origin = "1899-12-30")
+compared_data <- compared_data %>%
+  dplyr::mutate(back_order_date = as.double(back_order_date),
+                shortage_date = as.double(shortage_date)) %>%
+  mutate(
+    back_order_date = as.Date(back_order_date, origin = "1899-12-30"),
+    shortage_date = as.Date(shortage_date, origin = "1899-12-30")
+  )
 
 # Now you can use rbind
 ofr_data_base_2 <- rbind(ofr_data_base, compared_data)
@@ -83,7 +88,7 @@ ofr_data_base_2[!duplicated(ofr_data_base_2[,c("location", "legacy_sales_order",
 
 saveRDS(ofr_data_base_2, "OFR_data_base.rds")
 
-file.rename(from = "OFR_data_base_03.29.2024.rds", to = "rds/OFR_data_base_03.29.2024.rds")
+file.rename(from = "OFR_data_base_04.01.2024.rds", to = "rds/OFR_data_base_04.01.2024.rds")
 
 ################### OFR_data_base.rds is the main resource for the shiny #####################
 
