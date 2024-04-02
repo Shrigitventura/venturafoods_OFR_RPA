@@ -10,6 +10,8 @@ library(lubridate)
 library(rio)
 
 
+specific_date <- as.Date("2024-04-01")
+
 ### Daily Processing ###
 #################################################################### Read Files ####################################################################
 ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/04.01.2024/ofr.xlsx")
@@ -53,18 +55,25 @@ ofr_data %>%
 ###############################################################    Save it to DB  #################################################################
 ###################################################################################################################################################
 
+compared_data <- compared_data %>%
+  dplyr::mutate(back_order_date = as.double(back_order_date),
+                shortage_date = as.double(shortage_date)) %>%
+  
+  dplyr::mutate(shortage_date = ifelse(is.na(shortage_date), specific_date, shortage_date)) %>% 
+  
+  dplyr::mutate(back_order_date = as.Date(back_order_date, origin = "1899-12-30"),
+                shortage_date = as.Date(shortage_date, origin = "1899-12-30")) 
+
+
+
+
 # saveRDS(compared_data, "OFR_data_base.rds")
 saveRDS(compared_data, "OFR_data_base_04.01.2024.rds")
 ofr_data_base <- readRDS("OFR_data_base.rds")
 
 
-compared_data <- compared_data %>%
-  dplyr::mutate(back_order_date = as.double(back_order_date),
-                shortage_date = as.double(shortage_date)) %>%
-  mutate(
-    back_order_date = as.Date(back_order_date, origin = "1899-12-30"),
-    shortage_date = as.Date(shortage_date, origin = "1899-12-30")
-  )
+
+
 
 # Now you can use rbind
 ofr_data_base_2 <- rbind(ofr_data_base, compared_data)
