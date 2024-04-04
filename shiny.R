@@ -4,9 +4,13 @@ library(DT)
 library(tidyverse)
 library(lubridate)
 library(shinyWidgets)
- 
+
+
 # Load data
 data <- readRDS("OFR_data_base.rds")
+
+
+
 
 data %>% 
   dplyr::mutate(shortage_date = ymd(shortage_date), 
