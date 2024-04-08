@@ -10,12 +10,12 @@ library(lubridate)
 library(rio)
 
 
-specific_date <- as.Date("2024-04-04")
+specific_date <- as.Date("2024-04-05")
 
 ### Daily Processing ###
 #################################################################### Read Files ####################################################################
-ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/04.04.2024/ofr.xlsx")
-csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/04.04.2024/csv.CSV")
+ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/04.05.2024/ofr.xlsx")
+csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/04.05.2024/csv.CSV")
 ####################################################################################################################################################
 
 # Clean Data
@@ -68,7 +68,7 @@ compared_data <- compared_data %>%
 
 
 # saveRDS(compared_data, "OFR_data_base.rds")
-saveRDS(compared_data, "OFR_data_base_04.04.2024.rds")
+saveRDS(compared_data, "OFR_data_base_04.05.2024.rds")
 ofr_data_base <- readRDS("OFR_data_base.rds")
 
 
@@ -117,11 +117,65 @@ rbind(ofr_data_base_3, ofr_data_base_4) -> ofr_data_base_final
 
 saveRDS(ofr_data_base_final, "OFR_data_base.rds")
 
-file.rename(from = "OFR_data_base_04.04.2024.rds", to = "rds/OFR_data_base_04.04.2024.rds")
+file.rename(from = "OFR_data_base_04.05.2024.rds", to = "rds/OFR_data_base_04.05.2024.rds")
 
 ################### OFR_data_base.rds is the main resource for the shiny #####################
 
 
+
+
+
+#############################################################################################
+#############################################################################################
+#############################################################################################
+#############################################################################################
+#############################################################################################
+
+
+####################### if you are seeing an error in date.. do below again #################
+
+ofr_data_base_2 <- readRDS("OFR_data_base.rds")
+
+
+# prevent duplicated save
+ofr_data_base_2[!duplicated(ofr_data_base_2[,c("location", "legacy_sales_order", "sales_order_date",
+                                               "jde_sales_order", "back_order_date", "reference_order_date",
+                                               "customer_po", "customer_ship_to_8", "customer_ship_to_9",
+                                               "make_buy_transfer", "label_owner", "priority_sku", "product_label_sku",
+                                               "description", "customer_profile_owner", "shortage_reason",
+                                               "shortage_date", "next_available_date", "followup_comments",
+                                               "type_of_sale", "type_of_sale_2", "total_sku_beginning_inventory",
+                                               "oo_cases", "b_t_open_order_cases", "order_shortage_case_no",
+                                               "total_sku_shortage_qty", "inventory_soft_hold_release",
+                                               "inventory_usable", "production_schedule", "production_soft_hold_release",
+                                               "purchase_order_and_transfer_in", "sales_order_and_transfer_out",
+                                               "item_to_compare_ofr", "item_to_compare_csv", "shipped qty(OFR)",
+                                               "shipped qty(CSV)", "match")]),] -> ofr_data_base_2
+
+
+# Get unique dates
+unique_dates <- unique(ofr_data_base_2$shortage_date)
+unusual_date <- unique_dates[which.max(unique_dates)]
+
+
+
+# Filter out the unusual date
+ofr_data_base_2 %>% 
+  filter(shortage_date != unusual_date)  -> ofr_data_base_3
+
+
+ofr_data_base_2 %>% 
+  filter(shortage_date == unusual_date) %>% 
+  dplyr::mutate(shortage_date = specific_date) -> ofr_data_base_4
+
+
+rbind(ofr_data_base_3, ofr_data_base_4) -> ofr_data_base_final
+
+
+saveRDS(ofr_data_base_final, "OFR_data_base.rds")
+
+
+################### OFR_data_base.rds is the main resource for the shiny #####################
 
 
 
