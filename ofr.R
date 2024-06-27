@@ -14,8 +14,8 @@ specific_date <- as.Date("2024-06-26")
 
 ### Daily Processing ###
 #################################################################### Read Files ####################################################################
-ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/06.26.2024/ofr.xlsx")
-csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/06.26.2024/csv.csv")
+ofr <- read_excel("C:/Users/sschiflett/OneDrive - Ventura Foods/Documents/OFR/Review Files for Teams/OFR Master List for Review 06.26.24.xlsx")
+csv_data <- read_csv("C:/Potential Shortages/CSV files/OE630CR_277308_20240626.csv")
 ####################################################################################################################################################
 
 # Clean Data
