@@ -10,12 +10,12 @@ library(lubridate)
 library(rio)
 
 
-specific_date <- as.Date("2024-06-26")
+specific_date <- as.Date("2024-06-27")
 
 ### Daily Processing ###
 #################################################################### Read Files ####################################################################
-ofr <- read_excel("C:/Users/sschiflett/OneDrive - Ventura Foods/Documents/OFR/Review Files for Teams/OFR Master List for Review 06.26.24.xlsx")
-csv_data <- read_csv("C:/Potential Shortages/CSV files/OE630CR_277308_20240626.csv")
+ofr <- read_excel("C:/Users/sschiflett/OneDrive - Ventura Foods/Documents/OFR/Review Files for Teams/OFR Master List for Review 06.27.24.xlsx")
+csv_data <- read_csv("C:/Potential Shortages/CSV files/OE630CR_281777_20240627.csv")
 ####################################################################################################################################################
 
 # Clean Data
@@ -68,7 +68,7 @@ compared_data <- compared_data %>%
 
 
 # saveRDS(compared_data, "OFR_data_base.rds")
-saveRDS(compared_data, "OFR_data_base_06.26.2024.rds")
+saveRDS(compared_data, "OFR_data_base_06.27.2024.rds")
 ofr_data_base <- readRDS("OFR_data_base.rds")
 
 
@@ -117,7 +117,7 @@ rbind(ofr_data_base_3, ofr_data_base_4) -> ofr_data_base_final
 
 saveRDS(ofr_data_base_final, "OFR_data_base.rds")
 
-file.rename(from = "OFR_data_base_06.26.2024.rds", to = "rds/OFR_data_base_06.26.2024.rds")
+file.rename(from = "OFR_data_base_06.27.2024.rds", to = "rds/OFR_data_base_06.27.2024.rds")
 
 ################### OFR_data_base.rds is the main resource for the shiny #####################
 
