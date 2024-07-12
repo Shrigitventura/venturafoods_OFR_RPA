@@ -10,12 +10,12 @@ library(lubridate)
 library(rio)
 
 
-specific_date <- as.Date("2024-07-10")
+specific_date <- as.Date("2024-07-11")
 
 ### Daily Processing ###
 #################################################################### Read Files ####################################################################
-ofr <- read_excel("C:/Users/sschiflett/OneDrive - Ventura Foods/Documents/OFR/Review Files for Teams/OFR Master List for Review 07.10.24.xlsx")
-csv_data <- read_csv("C:/Potential Shortages/CSV files/OE630CR_331237_20240710.csv")
+ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/07.11.2024/ofr.xlsx")
+csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/07.11.2024/csv.csv")
 ####################################################################################################################################################
 
 # Clean Data
