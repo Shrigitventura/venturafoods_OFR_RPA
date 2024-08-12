@@ -10,12 +10,21 @@ library(lubridate)
 library(rio)
 
 
+<<<<<<< HEAD
 specific_date <- as.Date("2024-08-09")
 
 ### Daily Processing ###
 #################################################################### Read Files ####################################################################
 ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/08.09.2024/ofr.xlsx")
 csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/08.09.2024/csv.csv")
+=======
+specific_date <- as.Date("2024-08-07")
+
+### Daily Processing ###
+#################################################################### Read Files ####################################################################
+ofr <- read_excel("C:/Users/sschiflett/OneDrive - Ventura Foods/Documents/OFR/Review Files for Teams/OFR Master List for Review 08.07.24.xlsx")
+csv_data <- read_csv("C:/Potential Shortages/CSV files/OE630CR_442476_20240807.csv")
+>>>>>>> 56bd2238265dac1a6bc7060832aad3ae7e93b2d3
 ####################################################################################################################################################
 
 # Clean Data
@@ -68,7 +77,11 @@ compared_data <- compared_data %>%
 
 
 # saveRDS(compared_data, "OFR_data_base.rds")
+<<<<<<< HEAD
 saveRDS(compared_data, "OFR_data_base_08.09.2024.rds")
+=======
+saveRDS(compared_data, "OFR_data_base_08.07.2024.rds")
+>>>>>>> 56bd2238265dac1a6bc7060832aad3ae7e93b2d3
 ofr_data_base <- readRDS("OFR_data_base.rds")
 
 
@@ -116,7 +129,11 @@ rbind(ofr_data_base_3, ofr_data_base_4) -> ofr_data_base_final
 
 saveRDS(ofr_data_base_final, "OFR_data_base.rds")
 
+<<<<<<< HEAD
 file.rename(from = "OFR_data_base_08.09.2024.rds", to = "rds/OFR_data_base_08.09.2024.rds")
+=======
+file.rename(from = "OFR_data_base_08.07.2024.rds", to = "rds/OFR_data_base_08.07.2024.rds")
+>>>>>>> 56bd2238265dac1a6bc7060832aad3ae7e93b2d3
 
 ################### OFR_data_base.rds is the main resource for the shiny #####################
 
