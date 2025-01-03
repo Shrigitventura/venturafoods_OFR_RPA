@@ -10,12 +10,12 @@ library(lubridate)
 library(rio)
 
 
-specific_date <- as.Date("2024-12-31")
+specific_date <- as.Date("2025-01-02")
 
 ### Daily Processing ###
 #################################################################### Read Files ####################################################################
-ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/12.31.2024/ofr.xlsx")
-csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2024/12.31.2024/csv.csv")
+ofr <- read_excel("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2025/01.02.2025/ofr.xlsx")
+csv_data <- read_csv("C:/Users/slee/OneDrive - Ventura Foods/Ventura Work/SCE/Project/FY 23/OFR/Daily Updates/2025/01.02.2025/csv.csv")
 
 
 
