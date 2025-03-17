@@ -10,14 +10,14 @@ library(lubridate)
 library(rio)
 
 
-specific_date <- as.Date("2025-03-04")
+specific_date <- as.Date("2025-03-14")
 
 ### Daily Processing ###
 
 
 #Shri local folder locations
-ofr <- read_excel("C:/Users/SPoudel/Ventura Foods/SC Analytics Team - General/Stan Report Files/OFR/Daily Updates/2025/03.04.2025/ofr.xlsx")
-csv_data <- read_csv("C:/Users/SPoudel/Ventura Foods/SC Analytics Team - General/Stan Report Files/OFR/Daily Updates/2025/03.04.2025/csv.csv")
+ofr <- read_excel("C:/Users/SPoudel/Ventura Foods/SC Analytics Team - General/Stan Report Files/OFR/Daily Updates/2025/03.14.2025/ofr.xlsx")
+csv_data <- read_csv("C:/Users/SPoudel/Ventura Foods/SC Analytics Team - General/Stan Report Files/OFR/Daily Updates/2025/03.14.2025/csv.csv")
 
 ####################################################################################################################################################
 
@@ -41,13 +41,13 @@ csv_data_compare %>%
 
 ofr_data %>% 
   dplyr::mutate(product_label_sku = gsub("-", "", product_label_sku)) %>% 
-  dplyr::mutate(ref = paste0(location, "_", legacy_sales_order, "_", product_label_sku)) %>% 
-  dplyr::mutate(item_to_compare_ofr = paste0(location, "_", product_label_sku)) %>% 
+  dplyr::mutate(ref = paste0(short_location, "_", legacy_sales_order, "_", product_label_sku)) %>% 
+  dplyr::mutate(item_to_compare_ofr = paste0(short_location, "_", product_label_sku)) %>% 
   dplyr::left_join(csv_data_compare) %>% 
-  dplyr::mutate(match = ifelse(shipq_qty == projected_to_ship_case_no, "matching", "not_matching")) %>% 
+  dplyr::mutate(match = ifelse(shipq_qty == projected_to_ship_qty_case_no, "matching", "not_matching")) %>% 
   dplyr::filter(!is.na(item_to_compare_csv)) %>% 
-  dplyr::relocate(projected_to_ship_case_no, .before = shipq_qty) %>% 
-  dplyr::rename("shipped qty(OFR)" = projected_to_ship_case_no,
+  dplyr::relocate(projected_to_ship_qty_case_no, .before = shipq_qty) %>% 
+  dplyr::rename("shipped qty(OFR)" = projected_to_ship_qty_case_no,
                 "shipped qty(CSV)" = shipq_qty) %>% 
   dplyr::select(-ref) %>% 
   dplyr::mutate(next_available_date = as.double(next_available_date),
@@ -64,19 +64,28 @@ compared_data <- compared_data %>%
   
   dplyr::mutate(shortage_date = ifelse(is.na(shortage_date), specific_date, shortage_date)) %>% 
   
+  #dplyr::mutate(back_order_date = as.Date(back_order_date, origin = "1899-12-30"),
+  #              shortage_date = as.Date(shortage_date, origin = "1899-12-30")) 
+
   dplyr::mutate(back_order_date = as.Date(back_order_date, origin = "1899-12-30"),
-                shortage_date = as.Date(shortage_date, origin = "1899-12-30")) 
+              shortage_date = as.Date(shortage_date) )
 
-
+##Change column names from new type to match old type
+colnames(compared_data) <- c("location","legacy_sales_order","sales_order_date","jde_sales_order",
+                             "reference_order_date","back_order_date","customer_po","customer_ship_to_8","customer_ship_to_9","make_buy_transfer",
+                             "label_owner","priority_sku","product_label_sku","description","customer_profile_owner","shortage_reason",
+                             "shortage_date","next_available_date","followup_comments","type_of_sale","type_of_sale_2",
+                             "total_sku_beginning_inventory","oo_cases","b_t_open_order_cases","order_shortage_case_no",
+                             "total_sku_shortage_qty","inventory_soft_hold_release","inventory_usable","production_schedule",
+                             "production_soft_hold_release","purchase_order_and_transfer_in","sales_order_and_transfer_out","item_to_compare_ofr",
+                             "item_to_compare_csv","shipped qty(OFR)","shipped qty(CSV)","match")
 
 
 # saveRDS(compared_data, "OFR_data_base.rds")
 
-saveRDS(compared_data, "OFR_data_base_03.04.2025.rds")
+saveRDS(compared_data, "OFR_data_base_03.14.2025.rds")
 
 ofr_data_base <- readRDS("OFR_data_base.rds")
-
-
 
 
 # Now you can use rbind
@@ -122,7 +131,7 @@ rbind(ofr_data_base_3, ofr_data_base_4) -> ofr_data_base_final
 saveRDS(ofr_data_base_final, "OFR_data_base.rds")
 
 
-file.rename(from = "OFR_data_base_03.04.2025.rds", to = "rds/OFR_data_base_03.04.2025.rds")
+file.rename(from = "OFR_data_base_03.14.2025.rds", to = "rds/OFR_data_base_03.14.2025.rds")
 
 
 ################### OFR_data_base.rds is the main resource for the shiny #####################
