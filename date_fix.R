@@ -7,6 +7,6 @@ date_fix$shortage_date %>% unique()
 #####################################################################
 date_fix %>% 
   dplyr::mutate(shortage_date = as.character(shortage_date)) %>% 
-  dplyr::filter(shortage_date != "4810426-11-06") -> date_fix
+  dplyr::filter(shortage_date != "2095-08-30") -> date_fix
 
 saveRDS(date_fix, "OFR_data_base.rds")

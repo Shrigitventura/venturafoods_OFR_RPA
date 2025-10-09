@@ -10,14 +10,14 @@ library(lubridate)
 library(rio)
 
 
-specific_date <- as.Date("2025-08-29")
+specific_date <- as.Date("2025-10-07")
 
 ### Daily Processing ###
 
 
 #Shri local folder locations
-ofr <- read_excel("C:/Users/SPoudel/Ventura Foods/SC Analytics Team - General/Stan Report Files/OFR/Daily Updates/2025/08.29.2025/ofr.xlsx")
-csv_data <- read_csv("C:/Users/SPoudel/Ventura Foods/SC Analytics Team - General/Stan Report Files/OFR/Daily Updates/2025/08.29.2025/csv.csv")
+ofr <- read_excel("C:/Users/SPoudel/Ventura Foods/SC Analytics Team - General/Stan Report Files/OFR/Daily Updates/2025/10.07.2025/ofr.xlsx")
+csv_data <- read_csv("C:/Users/SPoudel/Ventura Foods/SC Analytics Team - General/Stan Report Files/OFR/Daily Updates/2025/10.07.2025/csv.csv")
 
 ####################################################################################################################################################
 
@@ -83,7 +83,7 @@ colnames(compared_data) <- c("location","legacy_sales_order","sales_order_date",
 
 # saveRDS(compared_data, "OFR_data_base.rds")
 
-saveRDS(compared_data, "OFR_data_base_08.29.2025.rds")
+saveRDS(compared_data, "OFR_data_base_10.07.2025.rds")
 
 ofr_data_base <- readRDS("OFR_data_base.rds")
 
@@ -131,7 +131,7 @@ rbind(ofr_data_base_3, ofr_data_base_4) -> ofr_data_base_final
 saveRDS(ofr_data_base_final, "OFR_data_base.rds")
 
 
-file.rename(from = "OFR_data_base_08.29.2025.rds", to = "rds/OFR_data_base_08.29.2025.rds")
+file.rename(from = "OFR_data_base_10.07.2025.rds", to = "rds/OFR_data_base_10.07.2025.rds")
 
 
 ################### OFR_data_base.rds is the main resource for the shiny #####################
@@ -189,7 +189,7 @@ rbind(ofr_data_base_3, ofr_data_base_4) -> ofr_data_base_final
 
 ofr_data_base_final %>%
   mutate(shortage_date = as.Date(shortage_date)) %>%
-  filter(shortage_date >= as.Date("2023-11-01")) -> ofr_data_base_final
+  filter(shortage_date >= as.Date("2023-11-02")) -> ofr_data_base_final
 
 saveRDS(ofr_data_base_final, "OFR_data_base.rds")
 
